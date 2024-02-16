@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 
 def testbrides( infile , Noise ):
 
+    #Where infile is the excel file containing the keysight data
+    
     df = pd.read_excel(infile) 
 
     Row1 = 0
