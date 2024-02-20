@@ -18,6 +18,9 @@ def testbrides( infile , Noise ):
     
     df = pd.read_excel(infile) 
 
+    V0 = 4.3 #Volt
+
+
     Row1 = 0
     for i in range(0,len(df['Address'])):
         if ( df['Address'][i] == 'Scan Sweep Time (Sec)'):
@@ -35,6 +38,8 @@ def testbrides( infile , Noise ):
         Call_CH = Call_CH + [df.iloc[Row1-1:Row1,2*i+1:2*i+2].iat[0,0]]
     for i in range(0,len(Call_CH)):
         Call_CH[i] = Call_CH[i][0:3]
+    print(Call_CH)
+
 
     L_T=[ ] #To contain the time scales of each channel 
     L_VDC = [ ] #Signal of each channel
@@ -42,13 +47,26 @@ def testbrides( infile , Noise ):
         L_T=L_T+[df1.iloc[:,2*i:2*i+1]]
         L_VDC=L_VDC + [df1.iloc[:,2*i+1:2*i+2]]
 
-
     L_Vabs_NoOffset = [ ] #VDC in absolute values and without the offset
     for i in range(0,len(L_VDC)):
         L_Vabs_NoOffset = L_Vabs_NoOffset + [L_VDC[i]-L_VDC[i].iat[0,0]]
     for i in range(0,len(L_Vabs_NoOffset)):
         L_Vabs_NoOffset[i] = L_Vabs_NoOffset[i].abs()
 
+    for i in range(0,len(L_Vabs_NoOffset)):
+        L_Vabs_NoOffset[i] = L_Vabs_NoOffset[i].astype(float, errors="raise")
+
+    # Noise RMS
+    RMS = []
+    AVG = []
+
+    print(len(L_VDC[3]))
+    for i in range(0,len(L_VDC)):
+        RMS = RMS + [np.std(L_Vabs_NoOffset[i])]
+        AVG = AVG + [np.mean(L_Vabs_NoOffset[i])]
+    print(RMS)
+    print(AVG)
+    print(np.log(RMS))
 
     # Plot VDC(T) of each channel and |VDC-offset| of each channel
     for i in range(0,len(L_T)):
@@ -66,24 +84,69 @@ def testbrides( infile , Noise ):
     plt.show()
     plt.close()
 
+    plt.plot(L_T[0],L_Vabs_NoOffset[0],label='Canal 101')
+    plt.plot(L_T[25],L_Vabs_NoOffset[25],label='Canal 210')
+    plt.plot(L_T[27],L_Vabs_NoOffset[27],label='Canal 212')
+    plt.legend()
+    plt.title('|VDC-offset|')
+    plt.xlabel('Time')
+    plt.ylabel('VDC')  
+    plt.show()
+    plt.close()
+
 
     Amp_pick = [ ] # Ampl of each channel's pick
     Pick_ind = [ ] # Scan number corresponding to the pick of each channel
     T_Pick_ind = [ ] # Time corresponding to the pick of each channel
-    for i in range(0,len(L_Vabs_NoOffset)):
-        L_Vabs_NoOffset[i] = L_Vabs_NoOffset[i].astype(float, errors="raise")
 
     for i in range(0,len(L_T)):
         Amp_pick = Amp_pick + [ L_VDC[i].max() - L_VDC[i].min() ]
         Pick_ind = Pick_ind + [ L_Vabs_NoOffset[i].idxmax() - Row1 ]
     for i in range(0,len(L_T)):
         T_Pick_ind = T_Pick_ind + [ L_T[i].iat[ Pick_ind[i][0] , 0 ] ]
+    print(Pick_ind[0])
+
+
+    #For all the chanels
+    Square_wave = [] # Returns list of voltage of the differents points on the square wave of the differents chanels 
+    Square_wave_ind = []
+    Avg_SquareW = [] # List of the average voltage over the SW of the diff chanels
+    RMS_SquareW = []
+    for i in range(0,len(L_VDC)):
+        Square_wave = Square_wave + [[]]
+        Square_wave_ind = Square_wave_ind + [[]]
+    print(Square_wave)
+    for i in range(0,len(L_VDC)):
+        if Pick_ind[i][0] -1 + 5 > len(df1) :
+            d = len(df1) - ( Pick_ind[i][0] -1 )
+            for k in range( int(Pick_ind[i]) -d , int(Pick_ind[i]) + d -1):
+                if np.abs( float(L_Vabs_NoOffset[i].iat[k,0]) - float(Amp_pick[i]) ) < 2* float(RMS[i]) :
+                    Square_wave[i] = Square_wave[i] + [float(L_Vabs_NoOffset[i].iat[k,0])]
+                    Square_wave_ind[i] = Square_wave_ind[i] + [k]
+        else :
+            for k in range( int(Pick_ind[i]) -5 , int(Pick_ind[i]) + 5):
+                if np.abs( float(L_Vabs_NoOffset[i].iat[k,0]) - float(Amp_pick[i]) ) < 2* float(RMS[i]) :
+                    Square_wave[i] = Square_wave[i] + [float(L_Vabs_NoOffset[i].iat[k,0])]
+                    Square_wave_ind[i] = Square_wave_ind[i] + [k]
+                    
+    EndBreak_ind = Square_wave_ind[0][0]  #Returns the point where the first square wave starts
+    for i in range(0,len(Square_wave_ind)):
+        if Square_wave_ind[i] == [] :
+            EndBreak_ind = EndBreak_ind
+        else :
+            if Square_wave_ind[i][0] < EndBreak_ind :
+                EndBreak_ind = Square_wave_ind[i][0]
+  
+    for i in range(0,len(Square_wave)):
+        Avg_SquareW = Avg_SquareW + [np.mean(Square_wave[i])]
+        RMS_SquareW = RMS_SquareW + [np.std(Square_wave[i])]   
+    print('RMS_SquareW')
+    print(RMS_SquareW)
 
 
 
     # print( L_VDC[0].iat[Pick_ind[1][0] -1 ,0] )
 
-    V0 = 8.3 #Volt
     L_Vaf = []  #For each channel i, calculates the value of the signal of the neighboor channels j != i just after the pick of the channel i 
     L_Vbef = [] #For each channel i, calculates the value of the signal of the neighboor channels j != i just before the pick of the channel i
     L_Cor = [] #Quantify the correlation between a channel i and his neighboors
@@ -97,57 +160,153 @@ def testbrides( infile , Noise ):
             L_Vbef[i] = L_Vbef[i] + [0]
             L_Cor[i] = L_Cor[i] + [0]
             
-
-
     for i in range(0,len(L_VDC)):
         for j in range(0,len(L_VDC)):
-            if j != i :
-                if Pick_ind[i][0] -1 + 5 > len(df1) :
+            if Square_wave_ind[i]==[]:
+                d = len(df1) - ( Pick_ind[i][0] )
+                for k in range(0,int(d)):
+                    L_Vaf[i][j] = L_Vaf[i][j] + L_Vabs_NoOffset[j].iat[ Pick_ind[i][0] +k, 0 ]
+                for k in range(0,EndBreak_ind-1):
+                    L_Vbef[i][j] = L_Vbef[i][j] + L_Vabs_NoOffset[j].iat[ k , 0 ]
+                L_Vaf[i][j] = L_Vaf[i][j] / int(d)
+                L_Vbef[i][j] = L_Vbef[i][j] / (EndBreak_ind-1)
+                
+            else :
+                if Pick_ind[i][0] -1 + len(Square_wave[i]) > len(df1) :
                     d = len(df1) - ( Pick_ind[i][0] -1 )
                     for k in range(0,int(d)):
-                        L_Vaf[i][j] = L_Vaf[i][j] + L_Vabs_NoOffset[j].iat[ Pick_ind[i][0] -1 +k, 0 ]
-                        L_Vbef[i][j] = L_Vbef[i][j] + L_Vabs_NoOffset[j].iat[ Pick_ind[i][0] -1 -k, 0 ]
-                    L_Vaf[i][j] = L_Vaf[i][j] / 5
-                    L_Vbef[i][j] = L_Vbef[i][j] / 5
-                else:
-                    for k in range(0,5):
-                        L_Vaf[i][j] = L_Vaf[i][j] + L_Vabs_NoOffset[j].iat[ Pick_ind[i][0] -1 +k, 0 ]
-                        L_Vbef[i][j] = L_Vbef[i][j] + L_Vabs_NoOffset[j].iat[ Pick_ind[i][0] -1 -k, 0 ]
-                    L_Vaf[i][j] = L_Vaf[i][j] / 5
-                    L_Vbef[i][j] = L_Vbef[i][j] / 5
+                        L_Vaf[i][j] = L_Vaf[i][j] + L_Vabs_NoOffset[j].iat[ Square_wave_ind[i][0] +k, 0 ]
+                        for k in range(0,EndBreak_ind-1):
+                            L_Vbef[i][j] = L_Vbef[i][j] + L_Vabs_NoOffset[j].iat[ k , 0 ]
+                        L_Vaf[i][j] = L_Vaf[i][j] / int(d)
+                        L_Vbef[i][j] = L_Vbef[i][j] / (EndBreak_ind-1)
+                
+                else:                 
+                    for k in range(0,len(Square_wave[i])):
+                        L_Vaf[i][j] = L_Vaf[i][j] + L_Vabs_NoOffset[j].iat[ Square_wave_ind[i][0] +k, 0 ]
+                    for k in range(0,EndBreak_ind-1):
+                        L_Vbef[i][j] = L_Vbef[i][j] + L_Vabs_NoOffset[j].iat[ k , 0 ]
+                    L_Vaf[i][j] = L_Vaf[i][j] / len(Square_wave[i])
+                    L_Vbef[i][j] = L_Vbef[i][j] / (EndBreak_ind-1)
+
+        
     for i in range(0,len(L_VDC)):
         for j in range(0,len(L_VDC)):
-            if j != i :
-                L_Cor[j][i] = ( L_Vaf[i][j] - L_Vbef[i][j] ) / Amp_pick[i][0]
-            else:
-                if Noise == False :
-                    L_Cor[j][i] = Amp_pick[i][0] / V0
-                else :
-                    L_Cor[j][i] = Amp_pick[i][0] / V0
+            L_Cor[i][j] = ( L_Vaf[i][j] - L_Vbef[i][j] ) / V0
+
+
+    #For the functional chanels
+    Amp_pick_in = [ ] # Ampl of each functionnal channel's pick
+    Pick_ind_in = [ ] # Scan number corresponding to the pick of each functionnal channel
+    T_Pick_ind_in = [ ] # Time corresponding to the pick of each functionnal channel
+    Call_CH_in = []
+    RMS_in = []
+    Square_w_in = [] # Returns list of voltage of the differents points on the square wave of the differents chanels 
+    Square_w_ind_in = []
+    Avg_SquareW_in = [] # List of the average voltage over the SW of the diff chanels
+    RMS_SquareW_in = []
+    L_Vaf_in = [] 
+    L_Vbef_in = [] 
+    L_Cor_in = []
+    L_Vabs_NoOffset_in = []
+    L_T_in=[]
+    for i in range(0,len(Call_CH)):
+        if Call_CH[i] != '102' and Call_CH[i] !='103' and Call_CH[i] !='104' and Call_CH[i] !='206' and Call_CH[i] !='207' and Call_CH[i] !='215':
+             Amp_pick_in = Amp_pick_in + [Amp_pick[i]]
+             Pick_ind_in = Pick_ind_in + [Pick_ind[i]]
+             T_Pick_ind_in = T_Pick_ind_in + [T_Pick_ind[i]]
+             Call_CH_in = Call_CH_in + [Call_CH[i]]
+             RMS_in = RMS_in +[RMS[i]]
+             Square_w_in = Square_w_in + [Square_wave[i]]
+             Square_w_ind_in = Square_w_ind_in + [Square_wave_ind[i]]
+             Avg_SquareW_in = Avg_SquareW_in + [Avg_SquareW[i]]
+             RMS_SquareW_in = RMS_SquareW_in + [RMS_SquareW[i]]
+             L_Vabs_NoOffset_in = L_Vabs_NoOffset_in +[L_Vabs_NoOffset[i]]
+             L_T_in = L_T_in + [L_T[i]]
+    for i in range(0,len(Call_CH_in)):
+        L_Vaf_in = L_Vaf_in + [[]]
+        L_Vbef_in = L_Vbef_in + [[]]
+        L_Cor_in = L_Cor_in + [[]]
+    for i in range(0,len(Call_CH_in)):
+        for j in range(0,len(Call_CH_in)):
+            L_Vaf_in[i] = L_Vaf_in[i] + [0]
+            L_Vbef_in[i] = L_Vbef_in[i] + [0]
+            L_Cor_in[i] = L_Cor_in[i] + [0]
+            
+    for i in range(0,len(Call_CH_in)):
+        for j in range(0,len(Call_CH_in)):
+            if Square_w_ind_in[i]==[]:
+                d = len(df1) - ( Pick_ind_in[i][0] -1 )
+                for k in range(0,int(d)):
+                    L_Vaf_in[i][j] = L_Vaf_in[i][j] + L_Vabs_NoOffset_in[j].iat[ Pick_ind_in[i][0] +k, 0 ]
+                for k in range(0,EndBreak_ind-1):
+                    L_Vbef_in[i][j] = L_Vbef_in[i][j] + L_Vabs_NoOffset_in[j].iat[ k , 0 ]
+                L_Vaf_in[i][j] = L_Vaf_in[i][j] / int(d)
+                L_Vbef_in[i][j] = L_Vbef_in[i][j] / (EndBreak_ind-1)
+                
+            else :
+                if Pick_ind_in[i][0] -1 + len(Square_w_in[i]) > len(df1) :
+                    d = len(df1) - ( Pick_ind_in[i][0] -1 )
+                    for k in range(0,int(d)):
+                        L_Vaf_in[i][j] = L_Vaf_in[i][j] + L_Vabs_NoOffset_in[j].iat[ Square_w_ind_in[i][0] +k, 0 ]
+                        for k in range(0,EndBreak_ind-1):
+                            L_Vbef_in[i][j] = L_Vbef_in[i][j] + L_Vabs_NoOffset_in[j].iat[ k , 0 ]
+                        L_Vaf_in[i][j] = L_Vaf_in[i][j] / int(d)
+                        L_Vbef_in[i][j] = L_Vbef_in[i][j] / (EndBreak_ind-1)
+                
+                else:                 
+                    for k in range(0,len(Square_w_in[i])):
+                        L_Vaf_in[i][j] = L_Vaf_in[i][j] + L_Vabs_NoOffset_in[j].iat[ Square_w_ind_in[i][0] +k, 0 ]
+                        if i ==0 and j ==0:
+                            print('i=j=0')
+                            print(L_Vabs_NoOffset_in[j].iat[ Square_w_ind_in[i][0] +k, 0 ])
+                
+                    for k in range(0,EndBreak_ind-1):
+                        L_Vbef_in[i][j] = L_Vbef_in[i][j] + L_Vabs_NoOffset_in[j].iat[ k , 0 ]
+                    L_Vaf_in[i][j] = L_Vaf_in[i][j] / len(Square_w_in[i])
+                    L_Vbef_in[i][j] = L_Vbef_in[i][j] / (EndBreak_ind-1)
                     
 
+    
+    for i in range(0,len(Call_CH_in)):
+        for j in range(0,len(Call_CH_in)):
+            L_Cor_in[i][j] = ( L_Vaf_in[i][j] - L_Vbef_in[i][j] ) / V0
 
-    L_Cor = np.array(L_Cor)
-    COL = []
-    IND=[]
-    for i in range (0,len(L_VDC)):
-        COL = COL + [str(i)]
-        IND = IND + [str(i)]
-
+    for i in range(0,len(L_T_in)):
+        plt.plot(L_T_in[i],L_Vabs_NoOffset_in[i],label='Canal i')
+    plt.title('|VDC-offset| for functional chanels')
+    plt.xlabel('Time')
+    plt.ylabel('VDC')  
+    plt.show()
+    plt.close()
 
     #    CORRELATION MATRIX PLOT
 
     #DF = pd.DataFrame(L_Cor, COL , IND )
     DF = pd.DataFrame(L_Cor, Call_CH , Call_CH )
-    print('CORRELATION MATRIX:')
-    print(DF)
+    # print('CORRELATION MATRIX:')
+    # print(DF)
 
-    sns.heatmap(np.log(np.abs(DF)), vmin = -22 ,vmax = 20 , annot = True , annot_kws = {'fontsize': 10} , linewidths=1 , cbar = True, cmap = 'plasma')
+    sns.heatmap(np.log10(np.abs(DF)), vmin = -8 ,vmax = 0 , annot = True , annot_kws = {'fontsize': 7.9} , linewidths=1 , cbar = True , cmap = 'plasma')
     plt.title('Chanels correlation matrix (log10)')
-    plt.gcf().set_size_inches(20, 10)
+    plt.gcf().set_size_inches(15, 10)
     plt.tight_layout()
     plt.show()
     plt.close()
+
+    #For the functional chanels
+    DF_in = pd.DataFrame(L_Cor_in, Call_CH_in , Call_CH_in )
+    print('CORRELATION MATRIX FOR FUNCTIONAL CHANELS:')
+    print(DF_in)
+
+    res = sns.heatmap(np.log10(np.abs(DF_in)), vmin = -8 ,vmax = 0 , annot = True , annot_kws = {'fontsize': 7.9} , linewidths=1 , cbar = True , cmap = 'plasma')
+    plt.title('Functional Chanels correlation matrix (log10)')
+    plt.gcf().set_size_inches(15, 10)
+    res.set_xticklabels(res.get_xmajorticklabels(), fontsize = 10)
+    plt.tight_layout()
+    plt.show()
+    plt.close()
+
 
     #    AMPLITUDLE DATA FRAME PLOT
 
@@ -162,74 +321,29 @@ def testbrides( infile , Noise ):
 
     #    AMPLITUDE VS CHANELS PLOT
 
-    L_Amp_pick = []
-    S_A = 0 
-    Moy_A = 0 #Amplitude average
-    for i in range(0,len(Amp_pick)):
-        S_A = S_A + Amp_pick[i][0]
-        L_Amp_pick = L_Amp_pick + [Amp_pick[i][0]]
-    Moy_A = S_A/len(Amp_pick)
-    print('Moy_A=')
-    print(Moy_A)
-
-    L_CHoff = [] #List off the channnels out of services
-    L_CHin = []
-    L_Amp_pick_in = [] #List off the amplitud channnels off the functionals channels
-    L_Amp_pick_off = [] #List off the amplitud channnels off the unfunctionals channels
-    for i in range(0,len(Amp_pick)):
-        if Amp_pick[i][0] < 0.6 * Moy_A :
-            L_CHoff = L_CHoff + [i]
-            L_Amp_pick_off = L_Amp_pick_off + [Amp_pick[i][0]]
-        else:
-            L_CHin = L_CHin + [i]
-            L_Amp_pick_in = L_Amp_pick_in + [Amp_pick[i][0]]
-
-    Moy_Ain = np.mean(L_Amp_pick_in) #Amplitude average off the functionals channels
-    #Sigma_Ain = np.sqrt(len(L_Amp_pick_in))*np.std(L_Amp_pick_in) #Standard deviation of the amplitude of the functionnal chanels
-    Sigma_Ain = np.std(L_Amp_pick_in)
-
-    DA = []
-    for i in range(0,len(L_Amp_pick_in)):
-        DA = DA + [Sigma_Ain]
-
-    L_ch = []
-    Moy_plt = []
-    for i in range (0,len(Call_CH)):
-        L_ch=L_ch + [i]
-        Moy_plt = Moy_plt +[Moy_Ain]
-        
-
-    plt.plot(L_ch,Moy_plt , color='green', label ='average amplitude')
-    plt.plot(L_CHin, L_Amp_pick_in , 'x' , color='blue')
-    plt.errorbar(L_CHin, L_Amp_pick_in , yerr=DA , fmt='none', ecolor='red')
-    plt.plot(L_CHoff, L_Amp_pick_off , 'x' , color='blue')
-    plt.gca().xaxis
-    axes = plt.gca()
-    axes.xaxis.set_ticks(range(32))
-    plt.xlim(-1,32)
-    plt.xlabel('Chanel Number')
-    plt.ylabel('Amplitude')
-    plt.title('Chanels Number')
-    plt.gcf().set_size_inches(20, 10)
-    plt.legend(loc = 'right')
-    plt.show()
-    plt.close()
+    Mean=[]
+    for i in range (0,len(Call_CH_in)):
+        Mean=Mean+[np.mean(Avg_SquareW_in)]
 
 
-    plt.plot(L_ch,Moy_plt , color='green', label ='average amplitude')
-    plt.plot(L_CHin, L_Amp_pick_in , 'x' , color='blue')
-    plt.errorbar(L_CHin, L_Amp_pick_in , yerr=DA , fmt='none', ecolor='red')
-    plt.gca().xaxis
-    axes = plt.gca()
-    axes.xaxis.set_ticks(range(32))
-    plt.xlim(-1,32)
+    plt.plot(Call_CH, Avg_SquareW , 'x' , color='blue')
+    plt.errorbar(Call_CH, Avg_SquareW , RMS_SquareW , fmt='none', ecolor='red')
     plt.xlabel('Chanel Number')
     plt.ylabel('Amplitude')
     plt.title('Chanels amplitude')
     plt.gcf().set_size_inches(20, 10)
-    plt.legend(loc = 'upper right')
     plt.show()
     plt.close()
+
+    plt.plot(Call_CH_in,Mean , color='green', label ='average amplitude')
+    plt.plot(Call_CH_in, Avg_SquareW_in , 'x' , color='blue')
+    plt.errorbar(Call_CH_in, Avg_SquareW_in , RMS_SquareW_in , fmt='none', ecolor='red')
+    plt.xlabel('Chanel Number')
+    plt.ylabel('Amplitude')
+    plt.legend(loc = 'upper right')
+    plt.gcf().set_size_inches(20, 10)
+    plt.title('Functional Chanels amplitude')
+    plt.show()
     
     return(0)
 
