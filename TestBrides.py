@@ -20,7 +20,7 @@ df = pd.read_excel(infile)
     Config = json.loads(jsonConfig)
 
     V0 = Config['V0'] #Volt
-    intHSchanels = Config['intHSchanels']
+    intHSchannels = Config['intHSchannels']
 
 
     Row1 = 0
@@ -104,10 +104,10 @@ df = pd.read_excel(infile)
         T_Pick_ind = T_Pick_ind + [ L_T[i].iat[ Pick_ind[i][0] , 0 ] ]
 
 
-    #For all the chanels
-    Square_wave = [] # Returns list of voltage of the differents points on the square wave of the differents chanels 
+    #For all the channels
+    Square_wave = [] # Returns list of voltage of the differents points on the square wave of the differents channels 
     Square_wave_ind = []
-    Avg_SquareW = [] # List of the average voltage over the SW of the diff chanels
+    Avg_SquareW = [] # List of the average voltage over the SW of the diff channels
     RMS_SquareW = []
     for i in range(0,len(L_VDC)):
         Square_wave = Square_wave + [[]]
@@ -189,15 +189,15 @@ df = pd.read_excel(infile)
             L_Cor[i][j] = ( L_Vctalk[i][j] - L_Vbreak[i][j] ) / V0
 
 
-    #For the functional chanels
+    #For the functional channels
     Amp_pick_in = [ ] # Ampl of each functionnal channel's pick
     Pick_ind_in = [ ] # Scan number corresponding to the pick of each functionnal channel
     T_Pick_ind_in = [ ] # Time corresponding to the pick of each functionnal channel
     Call_CH_in = []
     RMS_in = []
-    Square_w_in = [] # Returns list of voltage of the differents points on the square wave of the differents chanels 
+    Square_w_in = [] # Returns list of voltage of the differents points on the square wave of the differents channels 
     Square_w_ind_in = []
-    Avg_SquareW_in = [] # List of the average voltage over the SW of the diff chanels
+    Avg_SquareW_in = [] # List of the average voltage over the SW of the diff channels
     RMS_SquareW_in = []
     L_Vctalk_in = [] 
     L_Vbreak_in = [] 
@@ -206,7 +206,7 @@ df = pd.read_excel(infile)
     L_T_in=[]
     for i in range(0,len(Call_CH)):
         A = int(Call_CH[i])
-        Bool = A in intHSchanels
+        Bool = A in intHSchannels
         if ( Bool == False ):
              print(Call_CH[i] + ' is Valid')
              Amp_pick_in = Amp_pick_in + [Amp_pick[i]]
@@ -269,7 +269,7 @@ df = pd.read_excel(infile)
 
     for i in range(0,len(L_T_in)):
         plt.plot(L_T_in[i],L_Vabs_NoOffset_in[i],label='Canal i')
-    plt.title('|VDC-offset| for functional chanels')
+    plt.title('|VDC-offset| for functional channels')
     plt.xlabel('Time')
     plt.ylabel('VDC')  
     plt.show()
@@ -283,15 +283,15 @@ df = pd.read_excel(infile)
     # print(DF)
 
     sns.heatmap(np.log10(np.abs(DF)), vmin = -8 ,vmax = 0 , annot = True , annot_kws = {'fontsize': 7.9} , linewidths=1 , cbar = True , cmap = 'plasma')
-    plt.title('Chanels correlation matrix (log10)')
+    plt.title('Channels correlation matrix (log10)')
     plt.gcf().set_size_inches(15, 10)
     plt.tight_layout()
     plt.show()
     plt.close()
 
-    #For the functional chanels
+    #For the functional channels
     DF_in = pd.DataFrame(L_Cor_in, Call_CH_in , Call_CH_in )
-    print('              CORRELATION MATRIX FOR FUNCTIONAL CHANELS:')
+    print('              CORRELATION MATRIX FOR FUNCTIONAL CHANNELS:')
     print(DF_in)
 
     res = sns.heatmap(np.log10(np.abs(DF_in)), vmin = -8 ,vmax = 0 , annot = True , annot_kws = {'fontsize': 7.9} , linewidths=1 , cbar = True , cmap = 'plasma')
@@ -311,7 +311,7 @@ df = pd.read_excel(infile)
         print(ampDF)
         
 
-    #    AMPLITUDE VS CHANELS PLOT
+    #    AMPLITUDE VS CHANNELS PLOT
 
     Mean=[]
     for i in range (0,len(Call_CH_in)):
@@ -320,9 +320,9 @@ df = pd.read_excel(infile)
 
     plt.plot(Call_CH, Avg_SquareW , 'x' , color='blue')
     plt.errorbar(Call_CH, Avg_SquareW , RMS_SquareW , fmt='none', ecolor='red')
-    plt.xlabel('Chanel Number')
+    plt.xlabel('Channel Number')
     plt.ylabel('Amplitude')
-    plt.title('Chanels amplitude')
+    plt.title('Channels amplitude')
     plt.gcf().set_size_inches(20, 10)
     plt.show()
     plt.close()
@@ -330,12 +330,12 @@ df = pd.read_excel(infile)
     plt.plot(Call_CH_in,Mean , color='green', label ='average amplitude')
     plt.plot(Call_CH_in, Avg_SquareW_in , 'x' , color='blue')
     plt.errorbar(Call_CH_in, Avg_SquareW_in , RMS_SquareW_in , fmt='none', ecolor='red')
-    plt.xlabel('Chanel Number')
+    plt.xlabel('Channel Number')
     plt.ylabel('Amplitude')
     plt.ylim(3.9,4.5)
     plt.legend(loc = 'upper right')
     plt.gcf().set_size_inches(20, 10)
-    plt.title('Functional Chanels amplitude')
+    plt.title('Functional Channels amplitude')
     plt.show()
     
     return(0)
