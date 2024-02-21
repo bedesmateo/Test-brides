@@ -55,10 +55,17 @@ Retourner sur Benchvue et cliquer sur "Stop All"
 
 Cliquer sur "Export All" puis sur "Microsoft Excel" pour exporter les données sous Excel
 
-Dans l'onglet "Export path", cliquer sur "Browse..." et selectionner Ce PC -> Bureau -> Brides -> Données`
+Dans l'onglet "Export path", cliquer sur "Browse..." et selectionner Ce PC -> Bureau -> Brides -> Données`(Créer un dossier Nom_Dossier avec Date et heure d'enregistrement de la prise de données qui contient le fichier de données Data_File)
 
 Puis cliquer sur OK
 
 #      ANALYSE DES DONNEES 
 
+Aller sur Spyder Python
+
+Ouvrir le fichier TestBrides.py (Situé dans C:/Users/DUNE_user/Desktop/Brides)
+
+Cliquer sur "Run File" ou F5
+
+Dans la Console Python executer " testbrides( 'Données/Nom_Dossier/Data_File.xlsx' , False )
 
