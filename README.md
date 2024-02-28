@@ -29,32 +29,22 @@ Sur Keysight BenchVue (après avoir allumé le Keysight):
 #      PRISE DE DONNEES
 
 Toujours sur Benchvue:
-
-Cliquer sur "Start All" (Lance l'acquisition)
-
+- Cliquer sur "Start All" (Lance l'acquisition)
 Retourner sur Matlab:
-
-Executer >> ContinuityTest(2048,1)
+- Executer >> ContinuityTest(2048,1)
 
 #      POST PRISE DE DONNEES
 
-Lorsque le message "END" s'affiche dans la fenêtre de commande Matlab:
-
+- Lorsque le message "END" s'affiche dans la fenêtre de commande Matlab:
 Retourner sur Benchvue et cliquer sur "Stop All"
-
-Cliquer sur "Export All" puis sur "Microsoft Excel" pour exporter les données sous Excel
-
-Dans l'onglet "Export path", cliquer sur "Browse..." et selectionner Ce PC -> Bureau -> Brides -> Données`(Créer un dossier Nom_Dossier avec Date et heure d'enregistrement de la prise de données qui contient le fichier de données Data_File)
-
-Puis cliquer sur OK
+- Cliquer sur "Export All" puis sur "Microsoft Excel" pour exporter les données sous Excel
+- Dans l'onglet "Export path", cliquer sur "Browse..." et selectionner Ce PC -> Bureau -> Brides -> Données`(Créer un dossier Nom_Dossier avec Date et heure d'enregistrement de la prise de données qui contient le fichier de données Data_File)
+- Puis cliquer sur OK
 
 #      ANALYSE DES DONNEES 
 
-Aller sur Spyder Python
-
-Ouvrir le fichier TestBrides.py (Situé dans C:/Users/DUNE_user/Desktop/Brides)
-
-Cliquer sur "Run File" ou F5
-
-Dans la Console Python executer " testbrides( 'Données/Nom_Dossier/Data_File.xlsx' , False )
+Aller sur Spyder Python :
+- Ouvrir le fichier TestBrides.py (Situé dans C:/Users/DUNE_user/Desktop/Brides)
+- Cliquer sur "Run File" ou F5
+- Dans la Console Python executer " testbrides( 'Données/Nom_Dossier/Data_File.xlsx' , False )
 
