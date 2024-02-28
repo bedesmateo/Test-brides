@@ -4,9 +4,15 @@ Ouvrir Matlab, Spyder python via Anaconda et Keysight Bench vue
 
 #      PRES PRISE DE DONNEES 
 
+Allumer le Keysight
+
+Brancher le port USB de la carte TDM au PC
+
+Allumer l'alimentation de tension (~9V / ~0.1 A)
+
 Sur Matlab :
 
-executer le ficher InitialisationTDM (Situé dans C:/Users/DUNE_user/Documents/Docs sur les TDMs/TDM/TDM/) 
+Executer (Run) le ficher InitialisationTDM (Situé dans C:/Users/DUNE_user/Documents/Docs sur les TDMs/TDM/TDM/) 
 
 la variable tdm devrait apparaitre dans le Workspace
 
@@ -19,7 +25,7 @@ Cliquer sur run (le message d'erreur "Not enough input arguments" s'ffiche dans 
 
 Sur Keysight BenchVue (après avoir allumé le Keysight):
 
-Cliquer sur "Create NEW"
+Cliquer sur "Discard data & Create NEW"
 
 Dans l'onglet "Configure Channels":
 
@@ -27,15 +33,15 @@ Selectionner les canals à tester (Les selectionner tous, ie du 101 au 116 et du
 
 Dans l'onglet "Data Loggings Settings/Start Data Logging":
 
-Cocher "Immediatly with Start Button"
+  - Cocher "Immediatly with Start Button"
 
 Dans l'onglet "Data Loggings Settings/Scan Interval"
 
-Cocher Custom et mettre un temps de scan de 2.000 secondes
+  - Cocher Custom et mettre un temps de scan de 2.000 secondes
 
 Dans l'onglet "Data Loggings Settings/Stop Data Logging"
 
-Cocher "Immediatly with Stop Button"
+  - Cocher "Immediatly with Stop Button"
 
 #      PRISE DE DONNEES
 
