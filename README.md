@@ -1,6 +1,6 @@
 # Test-brides
 
-Ouvrir Matlab, Spyder python via Anaconda et Keysight Bench vue
+Ouvrir sur l'ordinateur Matlab, Spyder python via Anaconda et Keysight Bench vue
 
 #      PRES PRISE DE DONNEES 
 
@@ -22,7 +22,7 @@ Sur Keysight BenchVue (après avoir allumé le Keysight):
 - Dans l'onglet "Data Loggings Settings/Start Data Logging":
   - Cocher "Immediatly with Start Button"
 - Dans l'onglet "Data Loggings Settings/Scan Interval"
-  - Cocher Custom et mettre un temps de scan de 2.000 secondes
+  - Cocher Custom et mettre un temps de scan de 2,000 secondes
 - Dans l'onglet "Data Loggings Settings/Stop Data Logging"
   - Cocher "Immediatly with Stop Button"
 
